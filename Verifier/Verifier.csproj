@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <AssemblyName>EdlinSoftware.Verifier</AssemblyName>
+    <RootNamespace>EdlinSoftware.Verifier</RootNamespace>
+    <Description>EdlinSoftware library for verification of complex objects in automated tests.</Description>
+    <Copyright>Copyright © 2017 EdlinSoftware</Copyright>
+    <PackageTags>Test</PackageTags>
+    <Authors>Ivan Iakimov (edlinsoft@gmail.com)</Authors>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+</Project>
