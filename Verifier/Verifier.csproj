@@ -9,6 +9,13 @@
     <PackageTags>Test</PackageTags>
     <Authors>Ivan Iakimov (edlinsoft@gmail.com)</Authors>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/yakimovim/verifier</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/yakimovim/verifier/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/yakimovim/verifier</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netstandard1.0\EdlinSoftware.Verifier.xml</DocumentationFile>
   </PropertyGroup>
 
 </Project>
