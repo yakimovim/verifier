@@ -4,17 +4,16 @@ namespace EdlinSoftware.Verifier.Tests
 {
     public class DynamicVerifiersTests
     {
-        private class TestVerifier : Verifier<string>
+        private class TestVerifier : Verifier<TestVerifier, string>
         {
             protected override void AddDynamicVerifiers(string instanceUnderTest)
             {
-                this
-                    .AddCriticalVerifiers(Assert.NotNull)
-                    .AddNormalVerifiers(
-                        sut => Assert.Equal(5, sut.Length),
-                        sut => Assert.StartsWith("h", sut),
-                        sut => Assert.EndsWith("o", sut)
-                        );
+                AddCriticalVerifiers(Assert.NotNull)
+                .AddNormalVerifiers(
+                    sut => Assert.Equal(5, sut.Length),
+                    sut => Assert.StartsWith("h", sut),
+                    sut => Assert.EndsWith("o", sut)
+                    );
             }
         }
 
@@ -29,6 +28,18 @@ namespace EdlinSoftware.Verifier.Tests
         public void Verify_ExecutesAllDynamicVerifiers()
         {
             var vr = _verifier.Verify("");
+
+            Assert.Equal(3, vr.ErrorMessages.Length);
+        }
+
+        [Fact]
+        public void Verify_DontStoryDynamicVerifiers()
+        {
+            var vr = _verifier.Verify("");
+
+            Assert.Equal(3, vr.ErrorMessages.Length);
+
+            vr = _verifier.Verify("");
 
             Assert.Equal(3, vr.ErrorMessages.Length);
         }

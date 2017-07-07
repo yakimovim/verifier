@@ -5,7 +5,7 @@ namespace EdlinSoftware.Verifier.Tests
 {
     public class StaticVerifiersTests
     {
-        private class TestVerifier : Verifier<string>
+        private class TestVerifier : Verifier<TestVerifier, string>
         { }
 
         private readonly TestVerifier _verifier;

@@ -8,48 +8,14 @@ namespace EdlinSoftware.Verifier
     /// <summary>
     /// Represents verifier of complex object.
     /// </summary>
+    /// <typeparam name="TVerifier">Type of verifier.</typeparam>
     /// <typeparam name="TUnderTest">Type of object under test.</typeparam>
-    public interface IVerifier<TUnderTest>
-    {
-        /// <summary>
-        /// Adds verification function to the container.
-        /// </summary>
-        /// <param name="verifiers">Verification functions.</param>
-        IVerifier<TUnderTest> AddVerifiers(params Func<TUnderTest, VerificationResult>[] verifiers);
-
-        /// <summary>
-        /// Runs all registered verifiers and return cumulative result.
-        /// </summary>
-        /// <param name="instanceUnderTest">Instance under test.</param>
-        VerificationResult Verify(TUnderTest instanceUnderTest);
-    }
-
-    /// <summary>
-    /// Represents verifier of complex object.
-    /// </summary>
-    /// <typeparam name="TUnderTest">Type of object under test.</typeparam>
-    public abstract class Verifier<TUnderTest> : IVerifier<TUnderTest>
+    public abstract class Verifier<TVerifier, TUnderTest> : IVerifier<TUnderTest>
+        where TVerifier : Verifier<TVerifier, TUnderTest>
     {
         private readonly LinkedList<Func<TUnderTest, VerificationResult>> _staticVerifiers = new LinkedList<Func<TUnderTest, VerificationResult>>();
-        private readonly LinkedList<Func<TUnderTest, VerificationResult>> _dynamicVerifiers = new LinkedList<Func<TUnderTest, VerificationResult>>();
 
-        private Action<Func<TUnderTest, VerificationResult>[]> _adder;
-
-        private void AddStaticVerifiers(params Func<TUnderTest, VerificationResult>[] verifiers)
-        {
-            foreach (var verifier in verifiers.Where(v => v != null))
-            {
-                _staticVerifiers.AddLast(verifier);
-            }
-        }
-
-        private void AddDynamicVerifiers(params Func<TUnderTest, VerificationResult>[] verifiers)
-        {
-            foreach (var verifier in verifiers.Where(v => v != null))
-            {
-                _dynamicVerifiers.AddLast(verifier);
-            }
-        }
+        private LinkedList<Func<TUnderTest, VerificationResult>> _currentVerifiers;
 
         /// <summary>
         /// Gets if this verification result should be critical or not.
@@ -58,53 +24,86 @@ namespace EdlinSoftware.Verifier
         public bool IsCritical { get; set; }
 
         /// <summary>
-        /// Initializes instance of <see cref="Verifier{TUnderTest}"/>
+        /// Initializes instance of <see cref="Verifier{TVerifier, TUnderTest}"/>
         /// </summary>
         [DebuggerStepThrough]
         protected Verifier()
         {
-            _adder = AddStaticVerifiers;
+            _currentVerifiers = _staticVerifiers;
         }
 
-        /// <inheritdoc cref="IVerifier{TUnderTest}"/>
-        public IVerifier<TUnderTest> AddVerifiers(params Func<TUnderTest, VerificationResult>[] verifiers)
-        {
-            _adder(verifiers);
-            return this;
-        }
-        
         /// <summary>
-        /// Adds dynamic verifiers.
+        /// Adds verifier functions to this verifier.
         /// </summary>
-        /// <param name="instanceUnderTest">Instance under test.</param>
+        /// <param name="verifiers">Verifier functions.</param>
+        public TVerifier AddVerifiers(params Func<TUnderTest, VerificationResult>[] verifiers)
+        {
+            _currentVerifiers.AddVerifiers(verifiers);
+            return (TVerifier)this;
+        }
+
+        /// <summary>
+        /// Adds verifier actions to this verifier. Each action will produce critical verification result.
+        /// If there is an exception in an action, the message of this exception will be added to the <see cref="VerificationResult.ErrorMessages"/> collection.
+        /// </summary>
+        /// <param name="verifiers">Verifier actions</param>
+        public TVerifier AddCriticalVerifiers(params Action<TUnderTest>[] verifiers)
+        {
+            _currentVerifiers.AddCriticalVerifiers(verifiers);
+            return (TVerifier)this;
+        }
+
+        /// <summary>
+        /// Adds verifier actions to this verifier. Each action will produce normal verification result.
+        /// If there is an exception in an action, the message of this exception will be added to the <see cref="VerificationResult.ErrorMessages"/> collection.
+        /// </summary>
+        /// <param name="verifiers">Verifier actions</param>
+        public TVerifier AddNormalVerifiers(params Action<TUnderTest>[] verifiers)
+        {
+            _currentVerifiers.AddNormalVerifiers(verifiers);
+            return (TVerifier)this;
+        }
+
+        /// <summary>
+        /// Adds verifiers to this verifier.
+        /// </summary>
+        /// <param name="verifiers">Verifiers.</param>
+        public TVerifier AddVerifiers(params IVerifier<TUnderTest>[] verifiers)
+        {
+            _currentVerifiers.AddVerifiers(verifiers);
+            return (TVerifier)this;
+        }
+
+        /// <summary>
+        /// Override this method to set dynamic verifiers based on knowledge of <paramref name="instanceUnderTest"/>.
+        /// </summary>
+        /// <param name="instanceUnderTest">Instance of object yunder test.</param>
         protected virtual void AddDynamicVerifiers(TUnderTest instanceUnderTest) { }
 
-        /// <summary>
-        /// Runs all registered verifiers and return cumulative result.
-        /// </summary>
-        /// <param name="instanceUnderTest">Instance under test.</param>
-        /// <returns>Result of verification. Value of <see cref="VerificationResult.IsCritical"/> property will be in any case equal to the value of <see cref="IsCritical"/> of this object.</returns>
+        /// <inheritdoc cref="IVerifier{TUnderTest}"/>
         public VerificationResult Verify(TUnderTest instanceUnderTest)
         {
+            var dynamicVerifiers = new LinkedList<Func<TUnderTest, VerificationResult>>();
+
             try
             {
-                _adder = AddStaticVerifiers;
+                _currentVerifiers = dynamicVerifiers;
                 AddDynamicVerifiers(instanceUnderTest);
             }
             finally
             {
-                _adder = AddDynamicVerifiers;
+                _currentVerifiers = _staticVerifiers;
             }
 
             var errorMessages = new List<string>();
 
-            foreach (var verifier in _staticVerifiers.Concat(_dynamicVerifiers))
+            foreach (var verifier in _staticVerifiers.Concat(dynamicVerifiers))
             {
                 try
                 {
                     var verifierMessages = verifier(instanceUnderTest);
                     errorMessages.AddRange(verifierMessages.ErrorMessages);
-                    if(!verifierMessages.AllowContinue())
+                    if (!verifierMessages.AllowContinue())
                     { break; }
                 }
                 catch (Exception e)
@@ -114,12 +113,14 @@ namespace EdlinSoftware.Verifier
                 }
             }
 
+            dynamicVerifiers.Clear();
+
             return new VerificationResult(IsCritical, errorMessages.ToArray());
         }
     }
 
     /// <summary>
-    /// Provides help methods for verifiers.
+    /// Provides common functionality for verifiers.
     /// </summary>
     public static class Verifier
     {
@@ -145,98 +146,6 @@ namespace EdlinSoftware.Verifier
                 if (!string.IsNullOrWhiteSpace(errorMessage))
                     throw new VerificationException(errorMessage);
             };
-        }
-
-        /// <summary>
-        /// Asserts that <paramref name="instanceUnderTest"/> conforms with the <paramref name="verifier"/>.
-        /// </summary>
-        /// <typeparam name="TUnderTest">Type of object under test.</typeparam>
-        /// <param name="verifier">Verifier.</param>
-        /// <param name="instanceUnderTest">Instance under test.</param>
-        public static void Assert<TUnderTest>(this Verifier<TUnderTest> verifier, TUnderTest instanceUnderTest)
-        {
-            if (verifier == null) throw new ArgumentNullException(nameof(verifier));
-
-            var result = verifier.Verify(instanceUnderTest);
-            if (result.HasErrors())
-                AssertionFailed(string.Join(Environment.NewLine, result.ErrorMessages));
-        }
-
-        /// <summary>
-        /// Adds actions as critical verifiers. Critical verification result will be returned for each of them. 
-        /// If there is an exception in the <paramref name="verifiers"/> action, its message will be in the <see cref="VerificationResult.ErrorMessages"/> of the verification result.
-        /// </summary>
-        /// <typeparam name="TUnderTest">Type of object under test.</typeparam>
-        /// <param name="container">Verifiers container.</param>
-        /// <param name="verifiers">Verifying actions.</param>
-        public static IVerifier<TUnderTest> AddCriticalVerifiers<TUnderTest>(this IVerifier<TUnderTest> container, params Action<TUnderTest>[] verifiers)
-        {
-            if (container == null) throw new ArgumentNullException(nameof(container));
-
-            container.AddVerifiers(verifiers.Where(v => v != null).Select(v =>
-            {
-                return (Func<TUnderTest, VerificationResult>)(instanceUnderTest =>
-                {
-                    try
-                    {
-                        v(instanceUnderTest);
-                        return VerificationResult.Critical();
-                    }
-                    catch (Exception e)
-                    {
-                        return VerificationResult.Critical(e.Message);
-                    }
-                });
-            }).ToArray());
-
-            return container;
-        }
-
-        /// <summary>
-        /// Adds actions as normal verifiers. Normal verification result will be returned for each of them. 
-        /// If there is an exception in the <paramref name="verifiers"/> action, its message will be in the <see cref="VerificationResult.ErrorMessages"/> of the verification result.
-        /// </summary>
-        /// <typeparam name="TUnderTest">Type of object under test.</typeparam>
-        /// <param name="container">Verifiers container.</param>
-        /// <param name="verifiers">Verifying actions.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static IVerifier<TUnderTest> AddNormalVerifiers<TUnderTest>(this IVerifier<TUnderTest> container, params Action<TUnderTest>[] verifiers)
-        {
-            if (container == null) throw new ArgumentNullException(nameof(container));
-
-            container.AddVerifiers(verifiers.Where(v => v != null).Select(v =>
-            {
-                return (Func<TUnderTest, VerificationResult>) (instanceUnderTest =>
-                {
-                    try
-                    {
-                        v(instanceUnderTest);
-                        return VerificationResult.Normal();
-                    }
-                    catch (Exception e)
-                    {
-                        return VerificationResult.Normal(e.Message);
-                    }
-                });
-            }).ToArray());
-
-            return container;
-        }
-
-        /// <summary>
-        /// Adds external verifiers to the verifiers container.
-        /// If there is an exception in the <see cref="Verifier{TUnderTest}.Verify"/> method, critical verification result will be returned with message of the exception in the <see cref="VerificationResult.ErrorMessages"/> of the verification result.
-        /// </summary>
-        /// <typeparam name="TUnderTest">Type of object under test.</typeparam>
-        /// <param name="container">Verifiers container.</param>
-        /// <param name="verifiers">Verifiers.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static IVerifier<TUnderTest> AddVerifiers<TUnderTest>(this IVerifier<TUnderTest> container,
-            params Verifier<TUnderTest>[] verifiers)
-        {
-            if (container == null) throw new ArgumentNullException(nameof(container));
-            container.AddVerifiers(verifiers.Where(v => v != null).Select(v => (Func<TUnderTest, VerificationResult>)v.Verify).ToArray());
-            return container;
         }
     }
 }
