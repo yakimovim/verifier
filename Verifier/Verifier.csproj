@@ -12,6 +12,7 @@
     <PackageProjectUrl>https://github.com/yakimovim/verifier</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/yakimovim/verifier/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/yakimovim/verifier</RepositoryUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/yakimovim/verifier/master/Verifier/check.ico</PackageIconUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
