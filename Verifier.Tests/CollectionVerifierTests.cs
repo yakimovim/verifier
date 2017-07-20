@@ -1,17 +1,18 @@
-﻿using Xunit;
+﻿using EdlinSoftware.Verifier.Tests.Support;
+using Xunit;
 
 namespace EdlinSoftware.Verifier.Tests
 {
     public class CollectionVerifierTests
     {
-        private class TestVerifier : CollectionVerifier<TestVerifier, string>
+        private class StringCollectionVerifier : CollectionVerifier<StringCollectionVerifier, string>
         {}
 
-        private readonly TestVerifier _verifier;
+        private readonly StringCollectionVerifier _verifier;
 
         public CollectionVerifierTests()
         {
-            _verifier = new TestVerifier();
+            _verifier = new StringCollectionVerifier();
         }
 
         [Fact]
@@ -73,6 +74,44 @@ namespace EdlinSoftware.Verifier.Tests
             vr = _verifier.Verify(new[] { "aaa", "bbb" });
 
             Assert.Equal(0, vr.ErrorMessages.Length);
+        }
+
+        [Fact]
+        public void UseOfItemVerificationFunctions()
+        {
+            _verifier.AddItemVerifiers(elem => VerificationResult.Normal(elem.StartsWith("a") ? null : "String should start with 'a'"));
+            _verifier.AddItemVerifiers(elem => VerificationResult.Normal(elem.StartsWith("b") ? null : "String should start with 'b'"));
+
+            var vr = _verifier.Verify(new[] { "bbb", "aaa" });
+
+            Assert.Equal(2, vr.ErrorMessages.Length);
+        }
+
+        [Fact]
+        public void UseOfCriticalItemVerificationFunctions()
+        {
+            _verifier.AddCriticalItemVerifiers(elem => Assert.StartsWith("a", elem));
+            _verifier.AddCriticalItemVerifiers(elem => Assert.StartsWith("b", elem));
+
+            var vr = _verifier.Verify(new[] { "bbb", "aaa" });
+
+            Assert.Equal(1, vr.ErrorMessages.Length);
+        }
+
+        [Fact]
+        public void UseOfItemVerifiers()
+        {
+            var stringVerifier1 = new StringVerifier()
+                .AddNormalVerifiers(elem => Assert.StartsWith("a", elem));
+            var stringVerifier2 = new StringVerifier()
+                .AddNormalVerifiers(elem => Assert.StartsWith("b", elem));
+
+            _verifier.AddItemVerifiers(stringVerifier1);
+            _verifier.AddItemVerifiers(stringVerifier2);
+
+            var vr = _verifier.Verify(new[] { "bbb", "aaa" });
+
+            Assert.Equal(2, vr.ErrorMessages.Length);
         }
     }
 }

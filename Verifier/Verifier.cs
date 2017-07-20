@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace EdlinSoftware.Verifier
 {
@@ -77,12 +76,16 @@ namespace EdlinSoftware.Verifier
         /// <summary>
         /// Override this method to set dynamic verifiers based on knowledge of <paramref name="instanceUnderTest"/>.
         /// </summary>
-        /// <param name="instanceUnderTest">Instance of object yunder test.</param>
+        /// <param name="instanceUnderTest">Instance of object under test.</param>
         protected virtual void AddDynamicVerifiers(TUnderTest instanceUnderTest) { }
 
         /// <inheritdoc cref="IVerifier{TUnderTest}"/>
         public VerificationResult Verify(TUnderTest instanceUnderTest)
         {
+            var result = GetVerificationResultFrom(_staticVerifiers, instanceUnderTest);
+            if(!result.AllowContinue())
+                return new VerificationResult(IsCritical, result.ErrorMessages);
+
             var dynamicVerifiers = new LinkedList<Func<TUnderTest, VerificationResult>>();
 
             try
@@ -95,27 +98,53 @@ namespace EdlinSoftware.Verifier
                 _currentVerifiers = _staticVerifiers;
             }
 
-            var errorMessages = new List<string>();
+            result += GetVerificationResultFrom(dynamicVerifiers, instanceUnderTest);
 
-            foreach (var verifier in _staticVerifiers.Concat(dynamicVerifiers))
+            dynamicVerifiers.Clear();
+
+            return new VerificationResult(IsCritical, result.ErrorMessages);
+        }
+
+        private VerificationResult GetVerificationResultFrom(
+            LinkedList<Func<TUnderTest, VerificationResult>> verificationFunctions, 
+            TUnderTest instanceUnderTest)
+        {
+            if (verificationFunctions == null) throw new ArgumentNullException(nameof(verificationFunctions));
+
+            var result = VerificationResult.Normal();
+
+            foreach (var verifier in verificationFunctions)
             {
                 try
                 {
-                    var verifierMessages = verifier(instanceUnderTest);
-                    errorMessages.AddRange(verifierMessages.ErrorMessages);
-                    if (!verifierMessages.AllowContinue())
+                    var verificationResult = verifier(instanceUnderTest);
+                    result += verificationResult;
+                    if (!verificationResult.AllowContinue())
                     { break; }
                 }
                 catch (Exception e)
                 {
-                    errorMessages.Add(e.Message);
+                    result += VerificationResult.Critical(e.Message);
                     break;
                 }
             }
 
-            dynamicVerifiers.Clear();
+            return result;
+        }
 
-            return new VerificationResult(IsCritical, errorMessages.ToArray());
+        /// <summary>
+        /// Throws exception if there are verification errors in <paramref name="instanceUnderTest"/>.
+        /// </summary>
+        /// <param name="instanceUnderTest">Instance of object under test.</param>
+        /// <summary>
+        /// If there are verification errors in <paramref name="instanceUnderTest"/>, this method calls 
+        /// <see cref="Verifier.AssertionFailed"/> delegate.
+        /// </summary>
+        public void Check(TUnderTest instanceUnderTest)
+        {
+            var result = Verify(instanceUnderTest);
+            if (result.HasErrors())
+                Verifier.AssertionFailed(string.Join(Environment.NewLine, result.ErrorMessages));
         }
     }
 

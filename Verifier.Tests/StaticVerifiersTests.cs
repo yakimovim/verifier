@@ -1,18 +1,16 @@
 ﻿using System;
+using EdlinSoftware.Verifier.Tests.Support;
 using Xunit;
 
 namespace EdlinSoftware.Verifier.Tests
 {
     public class StaticVerifiersTests
     {
-        private class TestVerifier : Verifier<TestVerifier, string>
-        { }
-
-        private readonly TestVerifier _verifier;
+        private readonly StringVerifier _verifier;
 
         public StaticVerifiersTests()
         {
-            _verifier = new TestVerifier();
+            _verifier = new StringVerifier();
         }
 
         [Fact]
@@ -165,11 +163,11 @@ namespace EdlinSoftware.Verifier.Tests
         [Fact]
         public void AddVerifiers_Verifiers_ExecutesAllStaticVerifiers()
         {
-            var v1 = new TestVerifier();
+            var v1 = new StringVerifier();
             v1.AddVerifiers(sut => throw new Exception("error1"));
-            var v2 = new TestVerifier();
+            var v2 = new StringVerifier();
             v2.AddVerifiers(sut => throw new Exception("error2"));
-            var v3 = new TestVerifier();
+            var v3 = new StringVerifier();
             v3.AddVerifiers(sut => throw new Exception("error3"));
 
             var vr = _verifier
@@ -182,11 +180,11 @@ namespace EdlinSoftware.Verifier.Tests
         [Fact]
         public void AddVerifiers_Verifiers_DoesntVerifyAfterCriticalError()
         {
-            var v1 = new TestVerifier();
+            var v1 = new StringVerifier();
             v1.AddVerifiers(sut => throw new Exception("error1"));
-            var v2 = new TestVerifier { IsCritical = true };
+            var v2 = new StringVerifier { IsCritical = true };
             v2.AddVerifiers(sut => throw new Exception("error2"));
-            var v3 = new TestVerifier();
+            var v3 = new StringVerifier();
             v3.AddVerifiers(sut => throw new Exception("error3"));
 
             var vr = _verifier
@@ -199,11 +197,11 @@ namespace EdlinSoftware.Verifier.Tests
         [Fact]
         public void Verify_ReusesStaticVerifiers()
         {
-            var v1 = new TestVerifier();
+            var v1 = new StringVerifier();
             v1.AddVerifiers(sut => throw new Exception("error1"));
-            var v2 = new TestVerifier();
+            var v2 = new StringVerifier();
             v2.AddVerifiers(sut => throw new Exception("error2"));
-            var v3 = new TestVerifier();
+            var v3 = new StringVerifier();
             v3.AddVerifiers(sut => throw new Exception("error3"));
 
             var vr = _verifier

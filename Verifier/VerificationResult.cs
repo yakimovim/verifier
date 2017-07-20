@@ -72,7 +72,7 @@ namespace EdlinSoftware.Verifier
         /// <inheritdoc />
         public static VerificationResult operator +(VerificationResult vr1, VerificationResult vr2)
         {
-            var isCritical = vr1.IsCritical || vr2.IsCritical;
+            var isCritical = !vr1.AllowContinue() || !vr2.AllowContinue();
 
             return new VerificationResult(isCritical, vr1.ErrorMessages.Concat(vr2.ErrorMessages).ToArray());
         }
