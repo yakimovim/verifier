@@ -27,7 +27,7 @@ namespace EdlinSoftware.Verifier
         /// <param name="verifiers">Verifier functions.</param>
         public TVerifier AddItemVerifiers(params Func<TElement, VerificationResult>[] verifiers)
         {
-            _itemVerifiers.AddVerifiers(verifiers);
+            _itemVerifiers.AddNotNullRange(verifiers);
             return (TVerifier)this;
         }
 

@@ -37,7 +37,7 @@ namespace EdlinSoftware.Verifier
         /// <param name="verifiers">Verifier functions.</param>
         public TVerifier AddVerifiers(params Func<TUnderTest, VerificationResult>[] verifiers)
         {
-            _currentVerifiers.AddVerifiers(verifiers);
+            _currentVerifiers.AddNotNullRange(verifiers);
             return (TVerifier)this;
         }
 

@@ -119,13 +119,13 @@ namespace EdlinSoftware.Verifier.Tests
         {
             var vr = _verifier
                 .AddNormalVerifiers(
-                    sut => Assert.Equal(6, sut.Length),
-                    sut => Assert.True(sut.StartsWith("k")),
-                    sut => Assert.True(sut.EndsWith("p"))
+                    sut => throw new InvalidOperationException("error1"),
+                    sut => throw new InvalidOperationException("error2"),
+                    sut => throw new InvalidOperationException("error3")
                 )
                 .Verify("hello");
 
-            Assert.Equal(3, vr.ErrorMessages.Length);
+            Assert.Equal(new [] { "error1", "error2", "error3" }, vr.ErrorMessages);
         }
 
         [Fact]

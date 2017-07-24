@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionVerifierTests.cs" />
     <Compile Include="CheckTests.cs" />
     <Compile Include="CollectionVerifierTests.cs" />
     <Compile Include="DynamicVerifiersTests.cs" />
