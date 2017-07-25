@@ -377,3 +377,54 @@ public class StringVerifier : BaseVerifier<StringVerifier>
 }
 ```
 Now we get rid of type casts, and work with clean data.
+
+## NoObjectVerifier
+
+There is a class NoObjectVerifier, which allows you to make verification without object. You can use it for auxiliary verifications:
+```csharp
+    public class NotTooSmallVerifier : NoObjectVerifier<NotTooSmallVerifier>
+    {
+        public Func<int> GetLength { get; set; }
+
+        public NotTooSmallVerifier(int minLength)
+        {
+            AddNormalVerifiers(() =>
+            {
+                Assert.True(GetLength() > minLength);
+            });
+        }
+    }
+
+    public class StringVerifier : Verifier<StringVerifier, string>
+    {
+        public StringVerifier ExpectMinLength(int minLength)
+        {
+            AddVerifiers(sut =>
+            {
+                var verifier = new NotTooSmallVerifier(minLength)
+                {
+                    GetLength = () => sut.Length
+                };
+                return verifier.Verify();
+            });
+            return this;
+        }
+    }
+
+    public class CollectionVerifier : CollectionVerifier<CollectionVerifier, int>
+    {
+        public CollectionVerifier ExpectMinLength(int minLength)
+        {
+            AddVerifiers(sut =>
+            {
+                var verifier = new NotTooSmallVerifier(minLength)
+                {
+                    GetLength = sut.Count
+                };
+                return verifier.Verify();
+            });
+            return this;
+        }
+
+    }
+```

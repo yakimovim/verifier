@@ -6,8 +6,8 @@ namespace EdlinSoftware.Verifier
     /// <summary>
     /// Represents verifier, which does not use any particular object.
     /// </summary>
-    public abstract class ActionVerifier<TVerifier>
-        where TVerifier : ActionVerifier<TVerifier>
+    public abstract class NoObjectVerifier<TVerifier>
+        where TVerifier : NoObjectVerifier<TVerifier>
     {
         private readonly LinkedList<Func<VerificationResult>> _staticVerifiers = new LinkedList<Func<VerificationResult>>();
 

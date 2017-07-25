@@ -3,14 +3,14 @@ using Xunit;
 
 namespace EdlinSoftware.Verifier.Tests
 {
-    public class ActionVerifierTests
+    public class NoObjectVerifierTests
     {
-        private class StaticVerifier : ActionVerifier<StaticVerifier>
+        private class StaticVerifier : NoObjectVerifier<StaticVerifier>
         {}
 
         private readonly StaticVerifier _verifier;
 
-        public ActionVerifierTests()
+        public NoObjectVerifierTests()
         {
             _verifier = new StaticVerifier();
         }
