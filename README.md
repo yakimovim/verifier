@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/lkp546iuvp81rc9h/branch/master?svg=true)](https://ci.appveyor.com/project/IvanIakimov/verifier/branch/master)
+
 # Verifiers library
 
 Sometimes in automation tests we need to validate work of methods, returning very complex objects as a result. We want to be sure, that these objects have correct structure. Common assertion libraries allow us to check our expectation about simple objects (strings, numbers), and collections of objects of primitive types. But it can happen, that we need more.
