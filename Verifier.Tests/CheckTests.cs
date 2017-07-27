@@ -40,6 +40,12 @@ namespace EdlinSoftware.Verifier.Tests
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool isDisposing)
+        {
             Verifier.AssertionFailed = DefaultAssertionFailed;
         }
     }

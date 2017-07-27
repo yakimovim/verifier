@@ -61,7 +61,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticVerifiersTests.cs" />
     <Compile Include="Support\StringVerifier.cs" />
-    <Compile Include="Test.cs" />
     <Compile Include="VerificationResultExtensionsTests.cs" />
     <Compile Include="VerificationResultTests.cs" />
   </ItemGroup>
