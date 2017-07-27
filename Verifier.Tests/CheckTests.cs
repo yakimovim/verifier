@@ -11,6 +11,8 @@ namespace EdlinSoftware.Verifier.Tests
 
         public CheckTests()
         {
+            Verifier.AssertionFailed = DefaultAssertionFailed;
+
             _verifier = new StringVerifier()
                 .AddVerifiers(sut => VerificationResult.Critical(sut == "success" ? null : "error"));
         }
