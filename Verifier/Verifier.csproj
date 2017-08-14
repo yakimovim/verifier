@@ -6,7 +6,7 @@
     <RootNamespace>EdlinSoftware.Verifier</RootNamespace>
     <Description>EdlinSoftware library for verification of complex objects in automated tests.</Description>
     <Copyright>Copyright © 2017 EdlinSoftware</Copyright>
-    <PackageTags>Test, Testing, Assert, Verify</PackageTags>
+    <PackageTags>Test Testing Assert Verify</PackageTags>
     <Authors>Ivan Iakimov (edlinsoft@gmail.com)</Authors>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/yakimovim/verifier</PackageProjectUrl>
