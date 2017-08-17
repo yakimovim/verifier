@@ -1,4 +1,5 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/lkp546iuvp81rc9h/branch/master?svg=true)](https://ci.appveyor.com/project/IvanIakimov/verifier/branch/master)
+[![NuGet](https://img.shields.io/nuget/v/Edlinsoftware.Verifier.svg)](https://www.nuget.org/packages/Edlinsoftware.Verifier/)
 
 # Verifiers library
 
@@ -84,7 +85,7 @@ VerificationResult result = "error";
 ```
  In this case verification result always will be normal.
  
- Additionally verification result provides overload of '+' operator:
+ Additionally, verification result provides overload of '+' operator:
 ```csharp
 VerificationResult v1 = ...;
 VerificationResult v2 = ...;
@@ -144,7 +145,7 @@ verifier.Check(string2);
 ```
 It allows you to create verifier only once and then reuse it in different places.
 
-But sometimes you need to know instance of your complex object to decide, which verification functions to use. In this case you should override *AddDynamicVerifiers* methods. Inside this method, you have access to the instance of object under test, and you can use the same *AddVerifiers* and *AddNNNVerifiers* methods to add verification functions, based on the knowledge of instance of this object. These verification functions are added only for one verification. They are not stored inside verifier after verification is finished. This is why they are called dynamic. 
+But sometimes you need to know instance of your complex object to decide, which verification functions to use. In this case you should override *AddDynamicVerifiers* method. Inside this method, you have access to the instance of object under test, and you can use the same *AddVerifiers* and *AddNNNVerifiers* methods to add verification functions, based on the knowledge of instance of this object. These verification functions are added only for one verification. They are not stored inside verifier after verification is finished. This is why they are called dynamic. 
 
 For example, your method should generate string, which contains 3 letters 'b' if it starts from 'b', and only 2 letters 'b' otherwise. Here is how you can express these expectations.
 ```csharp
@@ -178,7 +179,7 @@ verifier.Check(str2);
 ...
 verifier.Check(str3);
 ```
-All verification function, added inside *AddDynamicVerifiers* method, will be used only for single call of *Check* (or *Verify*).
+All verification functions, added inside *AddDynamicVerifiers* method, will be used only for single call of *Check* (or *Verify*).
 
 ## Verification of lists
 
